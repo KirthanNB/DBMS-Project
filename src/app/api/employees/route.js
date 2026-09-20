@@ -1,46 +1,149 @@
-import {queryRaw} from "../../../../lib/db";
+import db, { queryRaw } from "../../../../lib/db";
 
+// GET - Display employees
+export async function GET() {
+  const employees = queryRaw(`
+    SELECT
+      Employee.Emp_ID,
+      Employee.F_Name,
+      Employee.M_Name,
+      Employee.L_Name,
+      Employee.Date_of_Joining,
+      Employee.Role,
+      Employee.Airline_ID,
+      Employee.Manager_ID,
 
-export async function GET(){
+      Airlines.Name AS Airline,
 
+      Manager.F_Name AS Manager_F_Name,
+      Manager.M_Name AS Manager_M_Name,
+      Manager.L_Name AS Manager_L_Name
 
-const employees=queryRaw(`
+    FROM Employee
 
-SELECT
+    LEFT JOIN Airlines
+      ON Employee.Airline_ID = Airlines.Airline_ID
 
-Employee.Emp_ID,
-Employee.F_Name,
-Employee.L_Name,
-Employee.Role,
+    LEFT JOIN Employee AS Manager
+      ON Employee.Manager_ID = Manager.Emp_ID
+  `);
 
-Airlines.Name AS Airline,
+  return Response.json(employees);
+}
 
+// POST - Add employee
+export async function POST(request) {
+  try {
+    const data = await request.json();
 
-GROUP_CONCAT(Employee_Email.Email)
-AS Emails
+    db.prepare(
+      `
+      INSERT INTO Employee
+      (
+        Emp_ID,
+        F_Name,
+        M_Name,
+        L_Name,
+        Date_of_Joining,
+        Role,
+        Airline_ID,
+        Manager_ID
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+    ).run(
+      data.emp_id,
+      data.f_name,
+      data.m_name || null,
+      data.l_name,
+      data.date_of_joining,
+      data.role,
+      data.airline_id || null,
+      data.manager_id || null,
+    );
 
+    return Response.json({
+      message: "Employee added successfully",
+    });
+  } catch (error) {
+    return Response.json(
+      {
+        error: error.message,
+      },
+      {
+        status: 400,
+      },
+    );
+  }
+}
 
-FROM Employee
+// PUT - Edit employee
+export async function PUT(request) {
+  try {
+    const data = await request.json();
 
+    db.prepare(
+      `
+      UPDATE Employee
+      SET
+        F_Name = ?,
+        M_Name = ?,
+        L_Name = ?,
+        Date_of_Joining = ?,
+        Role = ?,
+        Airline_ID = ?,
+        Manager_ID = ?
+      WHERE Emp_ID = ?
+    `,
+    ).run(
+      data.f_name,
+      data.m_name || null,
+      data.l_name,
+      data.date_of_joining,
+      data.role,
+      data.airline_id || null,
+      data.manager_id || null,
+      data.emp_id,
+    );
 
-LEFT JOIN Airlines
+    return Response.json({
+      message: "Employee updated successfully",
+    });
+  } catch (error) {
+    return Response.json(
+      {
+        error: error.message,
+      },
+      {
+        status: 400,
+      },
+    );
+  }
+}
 
-ON Employee.Airline_ID =
-Airlines.Airline_ID
+// DELETE - Delete employee
+export async function DELETE(request) {
+  try {
+    const data = await request.json();
 
+    db.prepare(
+      `
+      DELETE FROM Employee
+      WHERE Emp_ID = ?
+    `,
+    ).run(data.emp_id);
 
-LEFT JOIN Employee_Email
-
-ON Employee.Emp_ID =
-Employee_Email.Emp_ID
-
-
-GROUP BY Employee.Emp_ID;
-
-
-`);
-
-
-return Response.json(employees);
-
+    return Response.json({
+      message: "Employee deleted successfully",
+    });
+  } catch (error) {
+    return Response.json(
+      {
+        error: error.message,
+      },
+      {
+        status: 400,
+      },
+    );
+  }
 }
