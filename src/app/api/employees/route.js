@@ -1,6 +1,5 @@
 import db, { queryRaw } from "../../../../lib/db";
 
-// GET - Display employees
 export async function GET() {
   const employees = queryRaw(`
     SELECT
@@ -12,32 +11,23 @@ export async function GET() {
       Employee.Role,
       Employee.Airline_ID,
       Employee.Manager_ID,
-
       Airlines.Name AS Airline,
-
       Manager.F_Name AS Manager_F_Name,
       Manager.M_Name AS Manager_M_Name,
       Manager.L_Name AS Manager_L_Name
-
     FROM Employee
-
     LEFT JOIN Airlines
       ON Employee.Airline_ID = Airlines.Airline_ID
-
     LEFT JOIN Employee AS Manager
       ON Employee.Manager_ID = Manager.Emp_ID
   `);
-
   return Response.json(employees);
 }
 
-// POST - Add employee
 export async function POST(request) {
   try {
     const data = await request.json();
-
-    db.prepare(
-      `
+    db.prepare(`
       INSERT INTO Employee
       (
         Emp_ID,
@@ -50,8 +40,7 @@ export async function POST(request) {
         Manager_ID
       )
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `,
-    ).run(
+    `).run(
       data.emp_id,
       data.f_name,
       data.m_name || null,
@@ -59,31 +48,19 @@ export async function POST(request) {
       data.date_of_joining,
       data.role,
       data.airline_id || null,
-      data.manager_id || null,
+      data.manager_id || null
     );
 
-    return Response.json({
-      message: "Employee added successfully",
-    });
+    return Response.json({ message: "Employee added successfully" });
   } catch (error) {
-    return Response.json(
-      {
-        error: error.message,
-      },
-      {
-        status: 400,
-      },
-    );
+    return Response.json({ error: error.message }, { status: 400 });
   }
 }
 
-// PUT - Edit employee
 export async function PUT(request) {
   try {
     const data = await request.json();
-
-    db.prepare(
-      `
+    db.prepare(`
       UPDATE Employee
       SET
         F_Name = ?,
@@ -94,8 +71,7 @@ export async function PUT(request) {
         Airline_ID = ?,
         Manager_ID = ?
       WHERE Emp_ID = ?
-    `,
-    ).run(
+    `).run(
       data.f_name,
       data.m_name || null,
       data.l_name,
@@ -103,47 +79,25 @@ export async function PUT(request) {
       data.role,
       data.airline_id || null,
       data.manager_id || null,
-      data.emp_id,
+      data.emp_id
     );
 
-    return Response.json({
-      message: "Employee updated successfully",
-    });
+    return Response.json({ message: "Employee updated successfully" });
   } catch (error) {
-    return Response.json(
-      {
-        error: error.message,
-      },
-      {
-        status: 400,
-      },
-    );
+    return Response.json({ error: error.message }, { status: 400 });
   }
 }
 
-// DELETE - Delete employee
 export async function DELETE(request) {
   try {
     const data = await request.json();
-
-    db.prepare(
-      `
+    db.prepare(`
       DELETE FROM Employee
       WHERE Emp_ID = ?
-    `,
-    ).run(data.emp_id);
+    `).run(data.emp_id);
 
-    return Response.json({
-      message: "Employee deleted successfully",
-    });
+    return Response.json({ message: "Employee deleted successfully" });
   } catch (error) {
-    return Response.json(
-      {
-        error: error.message,
-      },
-      {
-        status: 400,
-      },
-    );
+    return Response.json({ error: error.message }, { status: 400 });
   }
 }

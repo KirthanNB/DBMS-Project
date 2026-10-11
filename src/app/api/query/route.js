@@ -1,15 +1,17 @@
-import { queryRaw } from "../../../../lib/db";
-
+import { executeSql } from "../../../../lib/db";
 
 export async function POST(request) {
-
-
-  const data = await request.json();
-
-
-  const result = queryRaw(data.sql);
-
-
-  return Response.json(result);
-
+  try {
+    const data = await request.json();
+    if (!data.sql || !data.sql.trim()) {
+      return Response.json({ error: "No SQL query provided" }, { status: 400 });
+    }
+    const result = executeSql(data.sql);
+    return Response.json(result);
+  } catch (error) {
+    return Response.json(
+      { error: error.message },
+      { status: 400 }
+    );
+  }
 }

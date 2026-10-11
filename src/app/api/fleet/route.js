@@ -1,6 +1,5 @@
 import db, { queryRaw } from "../../../../lib/db";
 
-// GET - Display aircraft
 export async function GET() {
   const fleet = queryRaw(`
     SELECT
@@ -10,29 +9,22 @@ export async function GET() {
       Aircraft.Year_of_MFG,
       Aircraft.Capacity,
       Aircraft.Type,
-
       Maintenance.Maintenance_Type,
       Maintenance.Engineer_Name,
       Maintenance.Cost,
       Maintenance.Status
-
     FROM Aircraft
-
     LEFT JOIN Maintenance
       ON Aircraft.Aircraft_ID =
          Maintenance.Aircraft_ID
   `);
-
   return Response.json(fleet);
 }
 
-// POST - Add aircraft
 export async function POST(request) {
   try {
     const data = await request.json();
-
-    db.prepare(
-      `
+    db.prepare(`
       INSERT INTO Aircraft
       (
         Aircraft_ID,
@@ -43,38 +35,25 @@ export async function POST(request) {
         Type
       )
       VALUES (?, ?, ?, ?, ?, ?)
-    `,
-    ).run(
+    `).run(
       data.aircraft_id,
       data.model,
       data.manufacturer,
       data.year_of_mfg,
       data.capacity,
-      data.type,
+      data.type
     );
 
-    return Response.json({
-      message: "Aircraft added successfully",
-    });
+    return Response.json({ message: "Aircraft added successfully" });
   } catch (error) {
-    return Response.json(
-      {
-        error: error.message,
-      },
-      {
-        status: 400,
-      },
-    );
+    return Response.json({ error: error.message }, { status: 400 });
   }
 }
 
-// PUT - Edit aircraft
 export async function PUT(request) {
   try {
     const data = await request.json();
-
-    db.prepare(
-      `
+    db.prepare(`
       UPDATE Aircraft
       SET
         Model = ?,
@@ -83,54 +62,31 @@ export async function PUT(request) {
         Capacity = ?,
         Type = ?
       WHERE Aircraft_ID = ?
-    `,
-    ).run(
+    `).run(
       data.model,
       data.manufacturer,
       data.year_of_mfg,
       data.capacity,
       data.type,
-      data.aircraft_id,
+      data.aircraft_id
     );
 
-    return Response.json({
-      message: "Aircraft updated successfully",
-    });
+    return Response.json({ message: "Aircraft updated successfully" });
   } catch (error) {
-    return Response.json(
-      {
-        error: error.message,
-      },
-      {
-        status: 400,
-      },
-    );
+    return Response.json({ error: error.message }, { status: 400 });
   }
 }
 
-// DELETE - Delete aircraft
 export async function DELETE(request) {
   try {
     const data = await request.json();
-
-    db.prepare(
-      `
+    db.prepare(`
       DELETE FROM Aircraft
       WHERE Aircraft_ID = ?
-    `,
-    ).run(data.aircraft_id);
+    `).run(data.aircraft_id);
 
-    return Response.json({
-      message: "Aircraft deleted successfully",
-    });
+    return Response.json({ message: "Aircraft deleted successfully" });
   } catch (error) {
-    return Response.json(
-      {
-        error: error.message,
-      },
-      {
-        status: 400,
-      },
-    );
+    return Response.json({ error: error.message }, { status: 400 });
   }
 }
